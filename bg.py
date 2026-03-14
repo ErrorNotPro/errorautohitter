@@ -1,67 +1,59 @@
 import io
-import logging
 import asyncio
-from aiogram import Bot, Dispatcher, types
+import time
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from rembg import remove
-from PIL import Image
+from rembg import remove, new_session
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
-# --- CONFIGURATION ---
+# --- CONFIG ---
 API_TOKEN = '8233339248:AAGsB-4sJyeHsHliL6jXAucsr864g7wOXkI'
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-@dp.message(Command("start"))
-async def send_welcome(message: types.Message):
-    await message.reply("Hi! Send me any photo, and I'll remove the background in seconds. ⚡")
+# Pre-loading the session once globally to keep it in RAM
+# 'u2netp' is the "Fast" version of the u2net model
+session = new_session("u2netp")
 
-@dp.message(types.ContentType.PHOTO)
-async def handle_photo(message: types.Message):
-    # Send a "processing" hint to the user
-    status_msg = await message.answer("Processing... ⏳")
+@dp.message(Command("start"))
+async def cmd_start(message: types.Message):
+    await message.reply("🚀 **High-Speed BG Remover Active!**\nSend a photo for 1-3 second processing.")
+
+@dp.message(F.photo)
+async def on_photo(message: types.Message):
+    start_time = time.time()
+    status = await message.answer("⚡ *Processing...*", parse_mode="Markdown")
     
     try:
-        # 1. Download photo to memory
-        photo_io = io.BytesIO()
+        # 1. Download to memory
+        photo_bytes = io.BytesIO()
         file = await bot.get_file(message.photo[-1].file_id)
-        await bot.download_file(file.file_path, photo_io)
-        photo_io.seek(0)
-
-        # 2. Run background removal in a separate thread to keep the bot responsive
-        loop = asyncio.get_event_loop()
-        output_io = await loop.run_in_executor(None, process_image, photo_io)
-
-        # 3. Send the processed image back as a document (to preserve transparency)
-        output_file = types.BufferedInputFile(output_io.getvalue(), filename="no_bg.png")
-        await message.answer_document(output_file, caption="Done! ✅")
+        await bot.download_file(file.file_path, photo_bytes)
         
-        # Clean up status message
-        await status_msg.delete()
+        # 2. Process background (Running in thread pool to keep bot alive)
+        loop = asyncio.get_event_loop()
+        input_data = photo_bytes.getvalue()
+        output_data = await loop.run_in_executor(None, lambda: remove(input_data, session=session))
+
+        # 3. Calculate speed
+        end_time = round(time.time() - start_time, 2)
+
+        # 4. Upload result
+        final_file = types.BufferedInputFile(output_data, filename="no_bg.png")
+        await message.answer_document(
+            final_file, 
+            caption=f"✅ **Done in {end_time}s**", 
+            parse_mode="Markdown"
+        )
+        
+        await status.delete()
 
     except Exception as e:
-        logging.error(f"Error: {e}")
-        await status_msg.edit_text("Oops! Something went wrong while processing.")
-
-def process_image(input_io):
-    """Function to handle the heavy lifting of BG removal."""
-    input_image = Image.open(input_io)
-    # The 'remove' function handles the AI mask generation
-    output_image = remove(input_image)
-    
-    output_io = io.BytesIO()
-    output_image.save(output_io, format='PNG')
-    output_io.seek(0)
-    return output_io
+        await status.edit_text(f"❌ **Error:** {str(e)}")
 
 async def main():
+    print("Bot is live and pre-loaded!")
     await dp.start_polling(bot)
 
-if __name__ == '__main__':
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Bot stopped.")
+if __name__ == "__main__":
+    asyncio.run(main())
