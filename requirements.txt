@@ -1,5 +1,4 @@
-aiogram
-rembg
-pillow
-bs4
-onnxruntime
+aiogram==3.4.1
+rembg[cpu]==2.0.57
+pillow==10.2.0
+onnxruntime==1.17.1
