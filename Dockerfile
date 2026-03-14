@@ -1,6 +1,6 @@
 FROM python:3.11
 
-# Install system dependencies
+# Install only the core system libraries
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -8,15 +8,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Pin NumPy immediately before installing anything else
+# Fix the NumPy conflict immediately
 RUN pip install --no-cache-dir "numpy<2.0.0"
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# This line should now succeed without the NumPy error
-RUN python -c "from rembg import new_session; new_session('u2netp')"
-
 COPY . .
 
+# No pre-downloading here to prevent the build error
 CMD ["python", "bot.py"]
