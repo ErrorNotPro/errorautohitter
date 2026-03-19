@@ -302,10 +302,9 @@ def site_checker_process(user_id, sites, cc, chat_id, message_id):
         result = check_single_cc(site, cc)
         
         if result.get('Response') in VALID_SITE:
-    working_sites.append(site)
-else:
-    # This correctly catches GENERIC_ERROR and GENERIC_DECLINED
-    dead_sites.append(site)
+            working_sites.append(site)
+        else:
+            dead_sites.append(site)
             
     if user_id in USER_SITES:
         USER_SITES[user_id] = working_sites
