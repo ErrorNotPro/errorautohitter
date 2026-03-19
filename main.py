@@ -12,20 +12,17 @@ API_TOKEN = '8112492091:AAEcKnuSF6U_BpFCidNUziXX8cGkuBv9rNY'  # Replace with you
 CHECKER_API = "https://sh.victus.name/sh?cc={cc}&site={site}"
 BOT_BY_TAG = "@ERR0R9"
 VALID_SITE = [
-    "Receipt ID is empty",
-    "token not found",
-    "HCAPTCHA DETECTED",
-    "STORE_PASSWORD_PROTECTED",
-    "CHECKOUT_FAILED",
-    "API_CONNECTION_ERROR",
-    "PRODUCT_NOT_FOUND",
-    "r4 token empty",
-    "Clinte Token",
-    "del amount empty",
-    "Payment Method Identifier is empty",
-    "Product id is empty",
-    "Session token is empty",
-    "Handle is empty"
+    "INSUFFICIENT_FUNDS",
+    "INCORRECT_ZIP",
+    "INCORRECT_PIN",
+    "INCORRECT_CVC",
+    "INCORRECT_ADDRESS",
+    "3D_AUTHENTICATION",
+    "GENERIC_DECLINED",
+    "GENERIC_ERROR",
+    "NAME_MISMATCH",
+    "INVALID_CVC",
+    "Thank You"
 ]
 SITE_ERROR_MSGS = [
     "Receipt ID is empty",
