@@ -27,9 +27,12 @@ VALID_SITE = [
 SITE_ERROR_MSGS = [
     "Receipt ID is empty",
     "token not found",
-    "HCAPTCHA DETECTED",
+    "CAPTCHA_REQUIRED",
     "STORE_PASSWORD_PROTECTED",
     "CHECKOUT_FAILED",
+    "NO_DELIVERY",
+    "GENERIC_ERROR",
+    "DELIVERY_CHANGED",
     "API_CONNECTION_ERROR",
     "PRODUCT_NOT_FOUND",
     "r4 token empty",
