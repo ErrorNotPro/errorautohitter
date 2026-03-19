@@ -11,10 +11,28 @@ import concurrent.futures
 API_TOKEN = '8112492091:AAEcKnuSF6U_BpFCidNUziXX8cGkuBv9rNY'  # Replace with your Telegram Bot API token
 CHECKER_API = "https://sh.victus.name/sh?cc={cc}&site={site}"
 BOT_BY_TAG = "@ERR0R9"
+VALID_SITE = [
+    "CARD_DECLINED", 
+    "INCORRECT_ADDRESS", 
+    "INCORRECT_CVC", 
+    "INCORRECT_PIN", 
+    "GENERIC_DECLINED", 
+    "GENERIC_ERROR", 
+    "Thank You", 
+    "3D_AUTHENTICATION", 
+    "INCORRECT_ZIP", 
+    "INSUFFICIENT_FUNDS", 
+    "INVALID_CVC", 
+    "NAME_MISMATCH"
+]
 SITE_ERROR_MSGS = [
     "Receipt ID is empty",
     "token not found",
     "HCAPTCHA DETECTED",
+    "STORE_PASSWORD_PROTECTED",
+    "CHECKOUT_FAILED",
+    "API_CONNECTION_ERROR",
+    "PRODUCT_NOT_FOUND",
     "r4 token empty",
     "Clinte Token",
     "del amount empty",
@@ -25,7 +43,7 @@ SITE_ERROR_MSGS = [
 ]
 CHARGED_RESPONSES = ["Thank You", "ORDER_CONFIRMED"]
 APPROVED_RESPONSES = ["INSUFFICIENT_FUNDS", "INVALID_CVC", "INCORRECT_CVC"]
-MAX_CONCURRENT_WORKERS = 10
+MAX_CONCURRENT_WORKERS = 5
 # --- Global State Management ---
 USER_SITES = {}
 CURRENT_CHECKERS = {}
@@ -281,10 +299,11 @@ def site_checker_process(user_id, sites, cc, chat_id, message_id):
             
         result = check_single_cc(site, cc)
         
-        if result['Response'] == "CARD_DECLINED":
-            working_sites.append(site)
-        else:
-            dead_sites.append(site)
+        if result.get('Response') in VALID_SITE:
+    working_sites.append(site)
+else:
+    # This correctly catches GENERIC_ERROR and GENERIC_DECLINED
+    dead_sites.append(site)
             
     if user_id in USER_SITES:
         USER_SITES[user_id] = working_sites
